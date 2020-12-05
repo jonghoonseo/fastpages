@@ -1,1 +1,1 @@
-Sitemap: https://jonghoonseo.github.io/sitemap.xml
+Sitemap: https://jonghoonseo.github.io/site/sitemap.xml
