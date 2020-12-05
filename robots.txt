@@ -1,1 +1,1 @@
-Sitemap: https://fastpages.fast.ai/sitemap.xml
+Sitemap: https://jonghoonseo.github.io/fastpages/sitemap.xml
