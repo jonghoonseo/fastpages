@@ -1,0 +1,1566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<link rel="icon" href="/site/assets/images/logo.png">
+
+<title>Word Embeddings | Jonghoon Seo</title>
+
+<!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Word Embeddings | Jonghoon Seo</title>
+<meta name="generator" content="Jekyll v4.1.1" />
+<meta property="og:title" content="Word Embeddings" />
+<meta name="author" content="Jonghoon Seo" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Representing text as numbers" />
+<meta property="og:description" content="Representing text as numbers" />
+<link rel="canonical" href="https://jonghoonseo.github.io/site/Word_Embeddings/" />
+<meta property="og:url" content="https://jonghoonseo.github.io/site/Word_Embeddings/" />
+<meta property="og:site_name" content="Jonghoon Seo" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2020-12-30T00:00:00-06:00" />
+<script type="application/ld+json">
+{"mainEntityOfPage":{"@type":"WebPage","@id":"https://jonghoonseo.github.io/site/Word_Embeddings/"},"url":"https://jonghoonseo.github.io/site/Word_Embeddings/","@type":"BlogPosting","headline":"Word Embeddings","dateModified":"2020-12-30T00:00:00-06:00","datePublished":"2020-12-30T00:00:00-06:00","author":{"@type":"Person","name":"Jonghoon Seo"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://jonghoonseo.github.io/site/assets/images/logo.png"},"name":"Jonghoon Seo"},"description":"Representing text as numbers","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+<link href="/site/assets/css/screen.css" rel="stylesheet">
+
+<link href="/site/assets/css/main.css" rel="stylesheet">
+
+<script src="/site/assets/js/jquery.min.js"></script>
+
+</head>
+
+
+<!-- change your GA id in _config.yml -->
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', '', 'auto');
+ga('send', 'pageview');
+</script>
+
+
+
+<body class="layout-notebook">
+	<!-- defer loading of font and font awesome -->
+	<noscript id="deferred-styles">
+		<link href="https://fonts.googleapis.com/css?family=Righteous%7CMerriweather:300,300i,400,400i,700,700i" rel="stylesheet">
+		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css" integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp" crossorigin="anonymous">
+	</noscript>
+
+
+<!-- Begin Menu Navigation
+================================================== -->
+<nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top mediumnavigation nav-down">
+
+    <div class="container pr-0">
+
+    <!-- Begin Logo -->
+    <a class="navbar-brand" href="/site/">
+    <img src="/site/assets/images/logo.png" alt="Jonghoon Seo">
+    </a>
+    <!-- End Logo -->
+
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarMediumish" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarMediumish">
+
+        <!-- Begin Menu -->
+
+            <ul class="navbar-nav ml-auto">
+
+                
+                <li class="nav-item">
+                
+                <a class="nav-link" href="/site/index.html">Blog</a>
+                </li>
+<!--
+                <li class="nav-item">
+                <a class="nav-link" href="/site/about">About</a>
+                </li>
+-->
+                <li class="nav-item">
+                <a target="_blank" class="nav-link" href="https://www.linkedin.com/in/jonghoonseo/"><i class="fab fa-linkedin"></i>LinkedIn</a>
+                </li>
+
+                <li class="nav-item">
+                <a target="_blank" class="nav-link" href="https://github.com/jonghoonseo"><i class="fab fa-github"></i>Github</a>
+                </li>
+
+                <script src="/site/assets/js/lunr.js"></script>
+
+
+<style>
+    .lunrsearchresult .title {color: #d9230f;}
+    .lunrsearchresult .url {color: silver;}
+    .lunrsearchresult a {display: block; color: #777;}
+    .lunrsearchresult a:hover, .lunrsearchresult a:focus {text-decoration: none;}
+    .lunrsearchresult a:hover .title {text-decoration: underline;}
+</style>
+
+
+<form class="bd-search" onSubmit="return lunr_search(document.getElementById('lunrsearch').value);">
+    <input type="text" class="form-control text-small launch-modal-search" id="lunrsearch" name="q" maxlength="255" value="" placeholder="Type and enter..."/>
+</form>
+
+<div id="lunrsearchresults">
+    <ul></ul>
+</div>
+
+<script src="/site/assets/js/lunrsearchengine.js"></script>
+
+            </ul>
+
+        <!-- End Menu -->
+
+    </div>
+
+    </div>
+</nav>
+<!-- End Navigation
+================================================== -->
+
+<div class="site-content">
+
+<div class="container">
+
+<!-- Site Title
+================================================== -->
+<div class="mainheading">
+    <h1 class="sitetitle">Jonghoon Seo</h1>
+    <p class="lead">
+        JSeo's personal blog
+    </p>
+</div>
+
+<!-- Content
+================================================== -->
+<div class="main-content">
+    <!-- Begin Article
+================================================== -->
+<div class="container">
+    <div class="row">
+
+        <!-- Post Share -->
+        <div class="col-md-2 pl-0">
+            <div class="share sticky-top sticky-top-offset">
+    <p>
+        Share
+    </p>
+    <ul>
+        <li class="ml-1 mr-1">
+            <a target="_blank" href="https://twitter.com/intent/tweet?text=Word Embeddings&url=https://jonghoonseo.github.io/site/Word_Embeddings/" onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                <i class="fab fa-twitter"></i>
+            </a>
+        </li>
+
+        <li class="ml-1 mr-1">
+            <a target="_blank" href="https://facebook.com/sharer.php?u=https://jonghoonseo.github.io/site/Word_Embeddings/" onclick="window.open(this.href, 'facebook-share', 'width=550,height=435');return false;">
+                <i class="fab fa-facebook-f"></i>
+            </a>
+        </li>
+
+        <li class="ml-1 mr-1">
+            <a target="_blank" href="https://www.linkedin.com/shareArticle?mini=true&url=https://jonghoonseo.github.io/site/Word_Embeddings/" onclick="window.open(this.href, 'width=550,height=435');return false;">
+                <i class="fab fa-linkedin-in"></i>
+            </a>
+        </li>
+
+    </ul>
+    
+    <div class="sep">
+    </div>
+    <ul>
+        <li>
+        <a class="small smoothscroll" href="#disqus_thread"></a>
+        </li>
+    </ul>
+    
+</div>
+
+        </div>
+
+        <!-- Post -->
+        
+
+        <div class="col-md-9 flex-first flex-md-unordered">
+            <div class="mainheading">
+
+                <!-- Author Box -->
+                
+                <div class="row post-top-meta">
+                    <div class="col-xs-12 col-md-3 col-lg-2 text-center text-md-left mb-4 mb-md-0">
+                        
+                        <img class="author-thumb" src="https://www.gravatar.com/avatar/?s=250&d=mm&r=x" alt="">
+                        
+                    </div>
+                    <div class="col-xs-12 col-md-9 col-lg-10 text-center text-md-left">
+                        <a target="_blank" class="link-dark" href=""></a><a target="_blank" href="" class="btn follow">Follow</a>
+                        <span class="author-description"></span>
+                    </div>
+                </div>
+                
+
+                <!-- Post Title -->
+                <h1 class="posttitle">Word Embeddings</h1>
+
+            </div>
+
+            <!-- Adsense if enabled from _config.yml (change your pub id and slot) -->
+            
+            <!-- End Adsense -->
+
+            <!-- Post Featured Image -->
+            
+            <!-- End Featured Image -->
+
+            <!-- Post Content -->
+            <div class="article-post">
+                <!-- Toc if any -->
+                
+                    
+                    <div class="toc mt-4 mb-4 lead">
+                        <h3 class="font-weight-bold">Summary</h3>
+                        <ul>
+  <li><a href="#&#53581;&#49828;&#53944;&#47484;-&#49707;&#51088;&#47196;-&#54364;&#54788;&#54616;&#44592;">&#53581;&#49828;&#53944;&#47484; &#49707;&#51088;&#47196; &#54364;&#54788;&#54616;&#44592;<a class="anchor-link" href="#&#53581;&#49828;&#53944;&#47484;-&#49707;&#51088;&#47196;-&#54364;&#54788;&#54616;&#44592;"> </a></a>
+    <ul>
+      <li><a href="#One-hot-encoding">One-hot encoding<a class="anchor-link" href="#One-hot-encoding"> </a></a></li>
+      <li><a href="#&#44033;-&#45800;&#50612;&#47484;-unique-&#54620;-&#49707;&#51088;&#47196;-encoding">&#44033; &#45800;&#50612;&#47484; unique &#54620; &#49707;&#51088;&#47196; encoding<a class="anchor-link" href="#&#44033;-&#45800;&#50612;&#47484;-unique-&#54620;-&#49707;&#51088;&#47196;-encoding"> </a></a></li>
+      <li><a href="#Word-embeddings">Word embeddings<a class="anchor-link" href="#Word-embeddings"> </a></a></li>
+    </ul>
+  </li>
+  <li><a href="#Codes">Codes<a class="anchor-link" href="#Codes"> </a></a>
+    <ul>
+      <li><a href="#&#45936;&#51060;&#53552;-&#51456;&#48708;">&#45936;&#51060;&#53552; &#51456;&#48708;<a class="anchor-link" href="#&#45936;&#51060;&#53552;-&#51456;&#48708;"> </a></a>
+        <ul>
+          <li><a href="#IMDb-&#45936;&#51060;&#53552;&#49483;-&#45796;&#50868;&#47196;&#46300;">IMDb &#45936;&#51060;&#53552;&#49483; &#45796;&#50868;&#47196;&#46300;<a class="anchor-link" href="#IMDb-&#45936;&#51060;&#53552;&#49483;-&#45796;&#50868;&#47196;&#46300;"> </a></a>
+     -  <a href="#tf.keras.utils.get_file"><code>tf.keras.utils.get_file</code><a class="anchor-link" href="#tf.keras.utils.get_file"> </a></a>
+            <ul>
+              <li><a href="#IMDb-&#45936;&#51060;&#53552;&#49483;-&#44396;&#49457;">IMDb &#45936;&#51060;&#53552;&#49483; &#44396;&#49457;<a class="anchor-link" href="#IMDb-&#45936;&#51060;&#53552;&#49483;-&#44396;&#49457;"> </a></a></li>
+            </ul>
+          </li>
+          <li><a href="#tf.data.Dataset-&#49373;&#49457;"><code>tf.data.Dataset</code> &#49373;&#49457;<a class="anchor-link" href="#tf.data.Dataset-&#49373;&#49457;"> </a></a>
+            <ul>
+              <li><a href="#Dataset-&#54869;&#51064;">Dataset &#54869;&#51064;<a class="anchor-link" href="#Dataset-&#54869;&#51064;"> </a></a></li>
+            </ul>
+          </li>
+          <li><a href="#Dataset-&#49444;&#51221;">Dataset &#49444;&#51221;<a class="anchor-link" href="#Dataset-&#49444;&#51221;"> </a></a></li>
+        </ul>
+      </li>
+      <li><a href="#Embedding-layer">Embedding layer<a class="anchor-link" href="#Embedding-layer"> </a></a></li>
+      <li><a href="#Model">Model<a class="anchor-link" href="#Model"> </a></a>
+        <ul>
+          <li><a href="#Text-Preprocessing">Text Preprocessing<a class="anchor-link" href="#Text-Preprocessing"> </a></a></li>
+          <li><a href="#Model">Model<a class="anchor-link" href="#Model"> </a></a></li>
+        </ul>
+      </li>
+      <li><a href="#Compile-and-Training">Compile and Training<a class="anchor-link" href="#Compile-and-Training"> </a></a></li>
+      <li><a href="#&#54617;&#49845;&#46108;-Embedding-&#52628;&#52636;-&#48143;-&#51200;&#51109;">&#54617;&#49845;&#46108; Embedding &#52628;&#52636; &#48143; &#51200;&#51109;<a class="anchor-link" href="#&#54617;&#49845;&#46108;-Embedding-&#52628;&#52636;-&#48143;-&#51200;&#51109;"> </a></a>
+        <ul>
+          <li><a href="#Embedding-Projector-in-Colab">Embedding Projector in Colab<a class="anchor-link" href="#Embedding-Projector-in-Colab"> </a></a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>
+                    </div>
+                
+                <!-- End Toc -->
+                <!--
+#################################################
+### THIS FILE WAS AUTOGENERATED! DO NOT EDIT! ###
+#################################################
+# file to edit: _notebooks/2020-12-30-Word_Embeddings.ipynb
+-->
+
+<div class="container" id="notebook-container">
+        
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="&#53581;&#49828;&#53944;&#47484;-&#49707;&#51088;&#47196;-&#54364;&#54788;&#54616;&#44592;">&#53581;&#49828;&#53944;&#47484; &#49707;&#51088;&#47196; &#54364;&#54788;&#54616;&#44592;<a class="anchor-link" href="#&#53581;&#49828;&#53944;&#47484;-&#49707;&#51088;&#47196;-&#54364;&#54788;&#54616;&#44592;"> </a></h1><p>ML 모델들은 <code>vector</code> 를 입력으로 받기 때문에,
+text 처리 문제를 풀기 위해서는 '입력된 문자열을 숫자로 변환'하는 방법을 먼저 적용해야 한다.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="One-hot-encoding">One-hot encoding<a class="anchor-link" href="#One-hot-encoding"> </a></h2><p>첫번째 방법은 입력된 단어들을 one-hot 인코딩 하는 것이다. 이는 아래 그림과 같이, 모든 vocabulary 들을 각 bit 위치로 매핑하여 각 단어 위치의 bit 만 1로 set 하는 방법이다.</p>
+<p>가장 단순하게 vector 를 만들 수 있다는 장점이 있으나,
+각 단어 사이의 관계를 매핑할 수 없다.</p>
+<p><img src="https://github.com/tensorflow/docs/blob/master/site/en/tutorials/text/images/one-hot.png?raw=1" alt="" title="One-hot encoding" /></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="&#44033;-&#45800;&#50612;&#47484;-unique-&#54620;-&#49707;&#51088;&#47196;-encoding">&#44033; &#45800;&#50612;&#47484; unique &#54620; &#49707;&#51088;&#47196; encoding<a class="anchor-link" href="#&#44033;-&#45800;&#50612;&#47484;-unique-&#54620;-&#49707;&#51088;&#47196;-encoding"> </a></h2><p>one-hot encoding 의 sparse 한 한계를 개선하기 위해 각 단어를 binary representation 에서 integer representation 으로 나타낸 방법이다.</p>
+<p>하지만 여전히 각 단어 사이의 관계는 모델링 할 수 없고, 이로 인해 이를 학습한 모델의 파라미터 또한 interpretable 하지 않다 (또는 meaningful 하지 않다).</p>
+<p><img src="data:image/png;base64,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" alt="스크린샷 2020-12-28 오후 4.45.31.png" /></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Word-embeddings">Word embeddings<a class="anchor-link" href="#Word-embeddings"> </a></h2><p>단어 임베딩 방법은 유사한 단어가 유사한 인코딩으로 나타나는 효율적이고 dense 한 표현법을 제공한다. 이 임베딩은 수동으로 임베딩 값을 설정했던 기존 방법과 다르게, 데이터로부터 학습된다. 학습 과정을 통해 단어는 특정한 길이의 (임베딩의 길이는 hparam) 실수 벡터로 나타난다. 인코딩된 임베딩의 길이가 길면 좀 더 상세한 관계를 표현할 수 있으나, 더 많은 데이터가 필요하고, 길이가 짧으면 덜 상세한 관계가 캡쳐된다.</p>
+<p><img src="https://github.com/tensorflow/docs/blob/master/site/en/tutorials/text/images/embedding2.png?raw=1" alt="" /></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Codes">Codes<a class="anchor-link" href="#Codes"> </a></h1><p>본 예제에서는 문장에서 반응을 Classify 하는 Sentiment Classification 문제를 푼다.
+이는 단어들의 연속으로부터 <code>positive</code> / <code>negative</code> 를 판단하는 Binary classification 문제이다.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">import</span> <span class="nn">io</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">string</span>
+
+<span class="kn">from</span> <span class="nn">absl</span> <span class="kn">import</span> <span class="n">logging</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+
+<span class="n">logging</span><span class="o">.</span><span class="n">set_verbosity</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="&#45936;&#51060;&#53552;-&#51456;&#48708;">&#45936;&#51060;&#53552; &#51456;&#48708;<a class="anchor-link" href="#&#45936;&#51060;&#53552;-&#51456;&#48708;"> </a></h2><p>본 문제를 위해서 IMDb 데이터셋을 사용한다.</p>
+<ol>
+<li>IMDb 데이터셋 다운로드</li>
+<li><code>tf.data.Dataset</code> 생성</li>
+<li>Dataset 가속화</li>
+</ol>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="IMDb-&#45936;&#51060;&#53552;&#49483;-&#45796;&#50868;&#47196;&#46300;">IMDb &#45936;&#51060;&#53552;&#49483; &#45796;&#50868;&#47196;&#46300;<a class="anchor-link" href="#IMDb-&#45936;&#51060;&#53552;&#49483;-&#45796;&#50868;&#47196;&#46300;"> </a></h3>
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">IMDB_URL</span> <span class="o">=</span> <span class="s2">&quot;https://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz&quot;</span>
+
+<span class="k">def</span> <span class="nf">download_imdb</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="n">IMDB_URL</span><span class="p">,</span> <span class="n">base_dir</span><span class="o">=</span><span class="n">base_dir</span><span class="p">):</span>
+    <span class="n">dataset</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">get_file</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">url</span><span class="p">),</span>
+                                      <span class="n">url</span><span class="p">,</span> 
+                                      <span class="n">untar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                      <span class="n">cache_dir</span><span class="o">=</span><span class="n">base_dir</span><span class="p">,</span>
+                                      <span class="n">cache_subdir</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="n">dataset_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">dataset</span><span class="p">),</span> <span class="s1">&#39;aclImdb&#39;</span><span class="p">)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">dataset_dir</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">dataset_dir</span>
+
+<span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">base_dir</span><span class="p">,</span> <span class="s1">&#39;aclImdb&#39;</span><span class="p">,</span> <span class="s1">&#39;train&#39;</span><span class="p">)):</span>
+    <span class="n">dataset_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">base_dir</span><span class="p">,</span> <span class="s1">&#39;aclImdb&#39;</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">dataset_dir</span> <span class="o">=</span> <span class="n">download_imdb</span><span class="p">(</span><span class="n">IMDB_URL</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Downloading data from https://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz
+84131840/84125825 [==============================] - 4s 0us/step
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>INFO:absl:[&#39;imdbEr.txt&#39;, &#39;test&#39;, &#39;README&#39;, &#39;imdb.vocab&#39;, &#39;train&#39;]
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h5 id="tf.keras.utils.get_file"><code>tf.keras.utils.get_file</code><a class="anchor-link" href="#tf.keras.utils.get_file"> </a></h5><p>API link: <a href="https://www.tensorflow.org/api_docs/python/tf/keras/utils/get_file">https://www.tensorflow.org/api_docs/python/tf/keras/utils/get_file</a></p>
+<p>cache_dir 에 파일이 없다면 다운로드</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>이 중 <code>train/unsup</code> 은 필요 없으니 삭제 (unsupervised dataset)</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">unsup_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dataset_dir</span><span class="p">,</span> <span class="s1">&#39;train&#39;</span><span class="p">,</span> <span class="s1">&#39;unsup&#39;</span><span class="p">)</span>
+<span class="o">![</span> -d <span class="s2">&quot;{unsup_dir}&quot;</span> <span class="o">]</span> <span class="o">&amp;&amp;</span> rm -rf <span class="s2">&quot;{unsup_dir}&quot;</span>
+<span class="o">!</span>ls <span class="s2">&quot;{dataset_dir}/train&quot;</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>labeledBow.feat  pos		urls_neg.txt  urls_unsup.txt
+neg		 unsupBow.feat	urls_pos.txt
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="IMDb-&#45936;&#51060;&#53552;&#49483;-&#44396;&#49457;">IMDb &#45936;&#51060;&#53552;&#49483; &#44396;&#49457;<a class="anchor-link" href="#IMDb-&#45936;&#51060;&#53552;&#49483;-&#44396;&#49457;"> </a></h4>
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<details class="description">
+      <summary class="btn btn-sm" data-open="Hide Code" data-close="Show Code"></summary>
+        <p><div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">glob</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="n">data_dirs</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;train/pos&#39;</span><span class="p">,</span> <span class="s1">&#39;train/neg&#39;</span><span class="p">,</span> <span class="s1">&#39;test/pos&#39;</span><span class="p">,</span> <span class="s1">&#39;test/neg&#39;</span><span class="p">]</span>
+<span class="n">data_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dataset_dir</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span> <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">data_dirs</span><span class="p">]</span>
+<span class="n">data_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;*&#39;</span><span class="p">))</span> <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">data_list</span><span class="p">]</span>
+
+<span class="n">headers</span> <span class="o">=</span> <span class="p">[</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">data_dirs</span><span class="p">]</span> <span class="c1"># make multi-level index for Pandas</span>
+<span class="n">headers</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="o">.</span><span class="n">from_tuples</span><span class="p">(</span><span class="n">headers</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">headers</span><span class="p">)</span>
+<span class="n">data_list</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data_list</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">data_list</span><span class="p">)</span>
+
+<span class="k">assert</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dataset_dir</span><span class="p">,</span> <span class="s1">&#39;train&#39;</span><span class="p">,</span> <span class="s1">&#39;unsup&#39;</span><span class="p">))</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-&#39;</span> <span class="o">*</span> <span class="mi">50</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;num of data for each split: </span><span class="si">{</span><span class="n">data_list</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;total data: </span><span class="si">{</span><span class="n">data_list</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">data_list</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+</p>
+    </details>
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>MultiIndex([(&#39;train&#39;, &#39;pos&#39;),
+            (&#39;train&#39;, &#39;neg&#39;),
+            ( &#39;test&#39;, &#39;pos&#39;),
+            ( &#39;test&#39;, &#39;neg&#39;)],
+           )
+                                    0      ...                            12499
+train pos  ./aclImdb/train/pos/6836_9.txt  ...  ./aclImdb/train/pos/2563_10.txt
+      neg  ./aclImdb/train/neg/3006_3.txt  ...   ./aclImdb/train/neg/5741_1.txt
+test  pos  ./aclImdb/test/pos/7998_10.txt  ...  ./aclImdb/test/pos/10682_10.txt
+      neg   ./aclImdb/test/neg/4245_4.txt  ...    ./aclImdb/test/neg/1213_3.txt
+
+[4 rows x 12500 columns]
+--------------------------------------------------
+num of data for each split: 12500
+total data: 50000
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="tf.data.Dataset-&#49373;&#49457;"><code>tf.data.Dataset</code> &#49373;&#49457;<a class="anchor-link" href="#tf.data.Dataset-&#49373;&#49457;"> </a></h3><p><code>tf.keras.preprocessing.text_dataset_from_directory</code> 사용하여 <code>tf.data.Dataset</code> 생성</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">make_dataset</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span> <span class="n">validation_split</span><span class="o">=</span><span class="mf">0.2</span><span class="p">):</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;path: </span><span class="si">%s</span><span class="s1">, seed: </span><span class="si">%d</span><span class="s1">, batch_size: </span><span class="si">%d</span><span class="s1">, validation_split: </span><span class="si">%f</span><span class="s1">&#39;</span><span class="p">,</span>
+                  <span class="n">path</span><span class="p">,</span> <span class="n">seed</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">validation_split</span><span class="p">)</span>
+    <span class="n">train_ds</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">preprocessing</span><span class="o">.</span><span class="n">text_dataset_from_directory</span><span class="p">(</span>
+        <span class="n">path</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+        <span class="n">validation_split</span><span class="o">=</span><span class="n">validation_split</span><span class="p">,</span> 
+        <span class="n">subset</span><span class="o">=</span><span class="s1">&#39;training&#39;</span><span class="p">,</span>
+        <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
+    <span class="n">val_ds</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">preprocessing</span><span class="o">.</span><span class="n">text_dataset_from_directory</span><span class="p">(</span>
+        <span class="n">path</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+        <span class="n">validation_split</span><span class="o">=</span><span class="n">validation_split</span><span class="p">,</span> 
+        <span class="n">subset</span><span class="o">=</span><span class="s1">&#39;validation&#39;</span><span class="p">,</span>
+        <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">train_ds</span><span class="p">,</span> <span class="n">val_ds</span>
+<span class="n">train_ds</span><span class="p">,</span> <span class="n">val_ds</span> <span class="o">=</span> <span class="n">make_dataset</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dataset_dir</span><span class="p">,</span> <span class="s1">&#39;train&#39;</span><span class="p">),</span> <span class="n">seed</span><span class="o">=</span><span class="mi">123</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>DEBUG:absl:path: ./aclImdb/train, seed: 123, batch_size: 1024, validation_split: 0.200000
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Found 25000 files belonging to 2 classes.
+Using 20000 files for training.
+Found 25000 files belonging to 2 classes.
+Using 5000 files for validation.
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="Dataset-&#54869;&#51064;">Dataset &#54869;&#51064;<a class="anchor-link" href="#Dataset-&#54869;&#51064;"> </a></h4>
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">for</span> <span class="n">text_batch</span><span class="p">,</span> <span class="n">label_batch</span> <span class="ow">in</span> <span class="n">train_ds</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="mi">1</span><span class="p">):</span>
+  <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">label_batch</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">text_batch</span><span class="o">.</span><span class="n">numpy</span><span class="p">()[</span><span class="n">i</span><span class="p">])</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>0 b&#34;Oh My God! Please, for the love of all that is holy, Do Not Watch This Movie! It it 82 minutes of my life I will never get back. Sure, I could have stopped watching half way through. But I thought it might get better. It Didn&#39;t. Anyone who actually enjoyed this movie is one seriously sick and twisted individual. No wonder us Australians/New Zealanders have a terrible reputation when it comes to making movies. Everything about this movie is horrible, from the acting to the editing. I don&#39;t even normally write reviews on here, but in this case I&#39;ll make an exception. I only wish someone had of warned me before I hired this catastrophe&#34;
+1 b&#39;This movie is SOOOO funny!!! The acting is WONDERFUL, the Ramones are sexy, the jokes are subtle, and the plot is just what every high schooler dreams of doing to his/her school. I absolutely loved the soundtrack as well as the carefully placed cynicism. If you like monty python, You will love this film. This movie is a tad bit &#34;grease&#34;esk (without all the annoying songs). The songs that are sung are likable; you might even find yourself singing these songs once the movie is through. This musical ranks number two in musicals to me (second next to the blues brothers). But please, do not think of it as a musical per say; seeing as how the songs are so likable, it is hard to tell a carefully choreographed scene is taking place. I think of this movie as more of a comedy with undertones of romance. You will be reminded of what it was like to be a rebellious teenager; needless to say, you will be reminiscing of your old high school days after seeing this film. Highly recommended for both the family (since it is a very youthful but also for adults since there are many jokes that are funnier with age and experience.&#39;
+0 b&#34;Alex D. Linz replaces Macaulay Culkin as the central figure in the third movie in the Home Alone empire. Four industrial spies acquire a missile guidance system computer chip and smuggle it through an airport inside a remote controlled toy car. Because of baggage confusion, grouchy Mrs. Hess (Marian Seldes) gets the car. She gives it to her neighbor, Alex (Linz), just before the spies turn up. The spies rent a house in order to burglarize each house in the neighborhood until they locate the car. Home alone with the chicken pox, Alex calls 911 each time he spots a theft in progress, but the spies always manage to elude the police while Alex is accused of making prank calls. The spies finally turn their attentions toward Alex, unaware that he has rigged devices to cleverly booby-trap his entire house. Home Alone 3 wasn&#39;t horrible, but probably shouldn&#39;t have been made, you can&#39;t just replace Macauley Culkin, Joe Pesci, or Daniel Stern. Home Alone 3 had some funny parts, but I don&#39;t like when characters are changed in a movie series, view at own risk.&#34;
+0 b&#34;There&#39;s a good movie lurking here, but this isn&#39;t it. The basic idea is good: to explore the moral issues that would face a group of young survivors of the apocalypse. But the logic is so muddled that it&#39;s impossible to get involved.&lt;br /&gt;&lt;br /&gt;For example, our four heroes are (understandably) paranoid about catching the mysterious airborne contagion that&#39;s wiped out virtually all of mankind. Yet they wear surgical masks some times, not others. Some times they&#39;re fanatical about wiping down with bleach any area touched by an infected person. Other times, they seem completely unconcerned.&lt;br /&gt;&lt;br /&gt;Worse, after apparently surviving some weeks or months in this new kill-or-be-killed world, these people constantly behave like total newbs. They don&#39;t bother accumulating proper equipment, or food. They&#39;re forever running out of fuel in the middle of nowhere. They don&#39;t take elementary precautions when meeting strangers. And after wading through the rotting corpses of the entire human race, they&#39;re as squeamish as sheltered debutantes. You have to constantly wonder how they could have survived this long... and even if they did, why anyone would want to make a movie about them.&lt;br /&gt;&lt;br /&gt;So when these dweebs stop to agonize over the moral dimensions of their actions, it&#39;s impossible to take their soul-searching seriously. Their actions would first have to make some kind of minimal sense.&lt;br /&gt;&lt;br /&gt;On top of all this, we must contend with the dubious acting abilities of Chris Pine. His portrayal of an arrogant young James T Kirk might have seemed shrewd, when viewed in isolation. But in Carriers he plays on exactly that same note: arrogant and boneheaded. It&#39;s impossible not to suspect that this constitutes his entire dramatic range.&lt;br /&gt;&lt;br /&gt;On the positive side, the film *looks* excellent. It&#39;s got an over-sharp, saturated look that really suits the southwestern US locale. But that can&#39;t save the truly feeble writing nor the paper-thin (and annoying) characters. Even if you&#39;re a fan of the end-of-the-world genre, you should save yourself the agony of watching Carriers.&#34;
+0 b&#39;I saw this movie at an actual movie theater (probably the $2.00 one) with my cousin and uncle. We were around 11 and 12, I guess, and really into scary movies. I remember being so excited to see it because my cool uncle let us pick the movie (and we probably never got to do that again!) and sooo disappointed afterwards!! Just boring and not scary. The only redeeming thing I can remember was Corky Pigeon from Silver Spoons, and that wasn\&#39;t all that great, just someone I recognized. I\&#39;ve seen bad movies before and this one has always stuck out in my mind as the worst. This was from what I can recall, one of the most boring, non-scary, waste of our collective $6, and a waste of film. I have read some of the reviews that say it is worth a watch and I say, &#34;Too each his own&#34;, but I wouldn\&#39;t even bother. Not even so bad it\&#39;s good.&#39;
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Dataset-&#49444;&#51221;">Dataset &#49444;&#51221;<a class="anchor-link" href="#Dataset-&#49444;&#51221;"> </a></h3><p>가속을 위해 Dataset 에 설정을 추가함</p>
+<p><code>cache()</code>: 데이터를 메모리에 올림. 데이터가 메모리 크기에 비해 크다면, on-disk 캐쉬를 생성할 수 있음. 이는 작은 여러개의 파일보다 성능이 높음.</p>
+<p><code>prefetch()</code>: 학습 동안 데이터 전처리와 모델 실행을 overlap 함.</p>
+<p><a href="https://www.tensorflow.org/guide/data_performance">data performance</a> 디스크 캐쉬 등 여러 방법을 설명함</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">AUTOTUNE</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">experimental</span><span class="o">.</span><span class="n">AUTOTUNE</span>
+
+<span class="n">train_ds</span> <span class="o">=</span> <span class="n">train_ds</span><span class="o">.</span><span class="n">cache</span><span class="p">()</span><span class="o">.</span><span class="n">prefetch</span><span class="p">(</span><span class="n">buffer_size</span><span class="o">=</span><span class="n">AUTOTUNE</span><span class="p">)</span>
+<span class="n">val_ds</span> <span class="o">=</span> <span class="n">val_ds</span><span class="o">.</span><span class="n">cache</span><span class="p">()</span><span class="o">.</span><span class="n">prefetch</span><span class="p">(</span><span class="n">buffer_size</span><span class="o">=</span><span class="n">AUTOTUNE</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Embedding-layer">Embedding layer<a class="anchor-link" href="#Embedding-layer"> </a></h2><p>임베딩 레이어는 입력으로 integer 인덱스를 받아서, 이에 해당하는 실수 vector 를 출력으로 반환하는 lookup table 으로 볼 수 있다.</p>
+<p>여기서 임베딩의 크기는 하이퍼파라미터로 실험을 통해 조절이 필요하다.</p>
+<p><code>tf.keras.layers.Embedding</code></p>
+<div class="highlight"><pre><span></span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Embedding</span><span class="p">(</span>
+    <span class="n">input_dim</span><span class="p">,</span> <span class="n">output_dim</span><span class="p">,</span> <span class="n">embeddings_initializer</span><span class="o">=</span><span class="s1">&#39;uniform&#39;</span><span class="p">,</span>
+    <span class="n">embeddings_regularizer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">activity_regularizer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">embeddings_constraint</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mask_zero</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">input_length</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+<span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">EMBEDDING_SIZE</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">embedding_layer</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Embedding</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="n">EMBEDDING_SIZE</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>임베딩 레이어를 생성하면 처음에 랜덤한 값으로 초기화 되고,
+이후에는 backpropagation 을 통해 점차적으로 조절된다.
+학습이 완료되면, 임베딩은 <strong>단어 사이의 유사도</strong> 를 인코딩한다.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="n">embedding_layer</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">]))</span>
+<span class="n">result</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>array([[-0.00623799,  0.02114315,  0.03288199, -0.02495058,  0.04346171],
+       [-0.00650135,  0.03021416, -0.01943512,  0.03576155, -0.02844778],
+       [ 0.02554953,  0.03821062, -0.03710605,  0.035557  , -0.01577029]],
+      dtype=float32)</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>임베딩 레이어는 입력된 각 value 를 이에 해당하는 embedding 으로 변환하므로, 한 차원이 추가된다.</p>
+<p>임베딩 사이즈가 $N$ 이라고 했을 때, \
+$(I, J, K)$ 차원의 입력이 들어오면 $(I, J, K, N)$ 차원이 출력된다.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">input</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="nb">input</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+<span class="n">embeddings</span> <span class="o">=</span> <span class="n">embedding_layer</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+
+<span class="k">assert</span> <span class="n">embeddings</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="nb">list</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span><span class="n">EMBEDDING_SIZE</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">embeddings</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>(2, 3, 5)
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>variable length 를 입력으로 받기 위해서는 여러가지 표준화된 방법들이 있다.</p>
+<ul>
+<li>RNN</li>
+<li>Attention</li>
+<li>pooling layer</li>
+<li>Padding + cropping</li>
+</ul>
+<p>여기서는 Pooling Layer 방법을 사용한다.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Model">Model<a class="anchor-link" href="#Model"> </a></h2><p>본 예제에서는 단순한 형태의 모델을 사용한다.</p>
+<p>모델의 구조는 아래와 같다.</p>
+<p>input: batch of string sentence <code>(batch, -1)</code></p>
+<ol>
+<li>Text preprocessing layer: <code>(batch, sequence_length, 1)</code><ul>
+<li>standardize</li>
+<li>padding/cropping 수행</li>
+</ul>
+</li>
+<li>Embedding layer: <code>(batch, sequence_length, embedding_dim)</code><ul>
+<li>positive integer 입력값을 encoding 된 임베딩 벡터 값으로 변환</li>
+</ul>
+</li>
+<li>Global 1D pooling layer: <code>(batch, embedding_dim)</code><ul>
+<li>sequence 차원으로 평균을 취함으로써 fixed-length 벡터를 만듦</li>
+</ul>
+</li>
+<li>Fully connected layer: <code>(batch, num_of_fc)</code></li>
+<li>Output layer: <code>(batch, 1)</code></li>
+</ol>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Text-Preprocessing">Text Preprocessing<a class="anchor-link" href="#Text-Preprocessing"> </a></h3><p>모델에서 텍스트 전처리를 정의한다.</p>
+<p>여기에서는 <code>TextVectorization</code> 클래스를 사용하는데,
+이 함수는 먼저 standardization을 수행하고, 이를 <code>sequence_length</code> 길이로 padding/cropping 한다.</p>
+<p>최종적으로 dataset 을 넣어 <code>adapt()</code> 함수를 수행함으로써 데이터셋의 vocabulary 기반으로 단어 사전을 만든다.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">custom_standardization</span><span class="p">(</span><span class="n">input_data</span><span class="p">):</span>
+    <span class="n">lowercase</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">strings</span><span class="o">.</span><span class="n">lower</span><span class="p">(</span><span class="n">input_data</span><span class="p">)</span>
+    <span class="n">stripped_html</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">strings</span><span class="o">.</span><span class="n">regex_replace</span><span class="p">(</span><span class="n">lowercase</span><span class="p">,</span> <span class="s1">&#39;&lt;br /&gt;&#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">strings</span><span class="o">.</span><span class="n">regex_replace</span><span class="p">(</span><span class="n">stripped_html</span><span class="p">,</span>
+                                    <span class="s1">&#39;[</span><span class="si">%s</span><span class="s1">]&#39;</span> <span class="o">%</span> <span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">punctuation</span><span class="p">),</span>
+                                    <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+<span class="c1"># Vocabulary size and number of words in a sequence.</span>
+<span class="n">vocab_size</span> <span class="o">=</span> <span class="mi">10000</span>
+<span class="n">sequence_length</span> <span class="o">=</span> <span class="mi">100</span>
+
+<span class="c1"># Use the text vectorization layer to normalize, split, and map strings to </span>
+<span class="c1"># integers. Note that the layer uses the custom standardization defined above. </span>
+<span class="c1"># Set maximum_sequence length as all samples are not of the same length.</span>
+<span class="n">vectorize_layer</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">experimental</span><span class="o">.</span><span class="n">preprocessing</span><span class="o">.</span><span class="n">TextVectorization</span><span class="p">(</span>
+    <span class="n">standardize</span><span class="o">=</span><span class="n">custom_standardization</span><span class="p">,</span>
+    <span class="n">max_tokens</span><span class="o">=</span><span class="n">vocab_size</span><span class="p">,</span>
+    <span class="n">output_mode</span><span class="o">=</span><span class="s1">&#39;int&#39;</span><span class="p">,</span>
+    <span class="n">output_sequence_length</span><span class="o">=</span><span class="n">sequence_length</span><span class="p">)</span>
+
+<span class="c1"># Make a text-only dataset (no labels) and call adapt to build the vocabulary.</span>
+<span class="n">text_ds</span> <span class="o">=</span> <span class="n">train_ds</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">x</span><span class="p">)</span>
+<span class="n">vectorize_layer</span><span class="o">.</span><span class="n">adapt</span><span class="p">(</span><span class="n">text_ds</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Model">Model<a class="anchor-link" href="#Model"> </a></h3>
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">embedding_dim</span><span class="o">=</span><span class="mi">16</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">Sequential</span><span class="p">([</span>
+  <span class="n">vectorize_layer</span><span class="p">,</span>
+  <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Embedding</span><span class="p">(</span><span class="n">vocab_size</span><span class="p">,</span> <span class="n">embedding_dim</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;embedding&quot;</span><span class="p">),</span>
+  <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">GlobalAveragePooling1D</span><span class="p">(),</span>
+  <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;relu&#39;</span><span class="p">),</span>
+  <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="p">])</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Compile-and-Training">Compile and Training<a class="anchor-link" href="#Compile-and-Training"> </a></h2><p>학습에 필요한 유틸들을 추가함</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">tensorboard_callback</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">callbacks</span><span class="o">.</span><span class="n">TensorBoard</span><span class="p">(</span><span class="n">log_dir</span><span class="o">=</span><span class="s2">&quot;logs&quot;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Compile 하고 학습 진행</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;adam&#39;</span><span class="p">,</span>
+              <span class="n">loss</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">losses</span><span class="o">.</span><span class="n">BinaryCrossentropy</span><span class="p">(</span><span class="n">from_logits</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+              <span class="n">metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">])</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
+    <span class="n">train_ds</span><span class="p">,</span>
+    <span class="n">validation_data</span><span class="o">=</span><span class="n">val_ds</span><span class="p">,</span> 
+    <span class="n">epochs</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span>
+    <span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">tensorboard_callback</span><span class="p">])</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Epoch 1/15
+20/20 [==============================] - 5s 202ms/step - loss: 0.6927 - accuracy: 0.5037 - val_loss: 0.6906 - val_accuracy: 0.4886
+Epoch 2/15
+20/20 [==============================] - 2s 92ms/step - loss: 0.6892 - accuracy: 0.5037 - val_loss: 0.6854 - val_accuracy: 0.4886
+Epoch 3/15
+20/20 [==============================] - 2s 91ms/step - loss: 0.6830 - accuracy: 0.5037 - val_loss: 0.6766 - val_accuracy: 0.4886
+Epoch 4/15
+20/20 [==============================] - 2s 92ms/step - loss: 0.6726 - accuracy: 0.5037 - val_loss: 0.6630 - val_accuracy: 0.4886
+Epoch 5/15
+20/20 [==============================] - 2s 94ms/step - loss: 0.6566 - accuracy: 0.5037 - val_loss: 0.6441 - val_accuracy: 0.4886
+Epoch 6/15
+20/20 [==============================] - 2s 92ms/step - loss: 0.6348 - accuracy: 0.5039 - val_loss: 0.6205 - val_accuracy: 0.4962
+Epoch 7/15
+20/20 [==============================] - 2s 91ms/step - loss: 0.6075 - accuracy: 0.5357 - val_loss: 0.5933 - val_accuracy: 0.5784
+Epoch 8/15
+20/20 [==============================] - 2s 92ms/step - loss: 0.5762 - accuracy: 0.6235 - val_loss: 0.5645 - val_accuracy: 0.6404
+Epoch 9/15
+20/20 [==============================] - 2s 92ms/step - loss: 0.5429 - accuracy: 0.6898 - val_loss: 0.5360 - val_accuracy: 0.6824
+Epoch 10/15
+20/20 [==============================] - 2s 93ms/step - loss: 0.5096 - accuracy: 0.7375 - val_loss: 0.5094 - val_accuracy: 0.7176
+Epoch 11/15
+20/20 [==============================] - 2s 92ms/step - loss: 0.4781 - accuracy: 0.7664 - val_loss: 0.4859 - val_accuracy: 0.7412
+Epoch 12/15
+20/20 [==============================] - 2s 92ms/step - loss: 0.4494 - accuracy: 0.7903 - val_loss: 0.4656 - val_accuracy: 0.7550
+Epoch 13/15
+20/20 [==============================] - 2s 92ms/step - loss: 0.4236 - accuracy: 0.8096 - val_loss: 0.4485 - val_accuracy: 0.7652
+Epoch 14/15
+20/20 [==============================] - 2s 91ms/step - loss: 0.4008 - accuracy: 0.8228 - val_loss: 0.4342 - val_accuracy: 0.7760
+Epoch 15/15
+20/20 [==============================] - 2s 90ms/step - loss: 0.3805 - accuracy: 0.8354 - val_loss: 0.4223 - val_accuracy: 0.7866
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>&lt;tensorflow.python.keras.callbacks.History at 0x7f7761f350f0&gt;</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>모델 구조는 아래와 같다.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Model: &#34;sequential&#34;
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #   
+=================================================================
+text_vectorization (TextVect (None, 100)               0         
+_________________________________________________________________
+embedding (Embedding)        (None, 100, 16)           160000    
+_________________________________________________________________
+global_average_pooling1d (Gl (None, 16)                0         
+_________________________________________________________________
+dense (Dense)                (None, 16)                272       
+_________________________________________________________________
+dense_1 (Dense)              (None, 1)                 17        
+=================================================================
+Total params: 160,289
+Trainable params: 160,289
+Non-trainable params: 0
+_________________________________________________________________
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>학습 진행은 아래와 같다.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">load_ext</span> tensorboard
+<span class="o">%</span><span class="k">tensorboard</span> --logdir logs
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+
+<div id="e338d40e-39bf-4b68-9ea9-da54ca8edd7e"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#e338d40e-39bf-4b68-9ea9-da54ca8edd7e');
+
+        (async () => {
+            const url = new URL(await google.colab.kernel.proxyPort(6006, {'cache': true}));
+            url.searchParams.set('tensorboardColab', 'true');
+            const iframe = document.createElement('iframe');
+            iframe.src = url;
+            iframe.setAttribute('width', '100%');
+            iframe.setAttribute('height', '800');
+            iframe.setAttribute('frameborder', 0);
+            document.body.appendChild(iframe);
+        })();
+    
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>(loss 감소를 보니 좀 더 진행해도 괜찮았을듯)</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="&#54617;&#49845;&#46108;-Embedding-&#52628;&#52636;-&#48143;-&#51200;&#51109;">&#54617;&#49845;&#46108; Embedding &#52628;&#52636; &#48143; &#51200;&#51109;<a class="anchor-link" href="#&#54617;&#49845;&#46108;-Embedding-&#52628;&#52636;-&#48143;-&#51200;&#51109;"> </a></h2><p>상기와 같이 학습된 embedding 을 추출하고 저장하여 추후에 사용하도록 한다.</p>
+<p>embedding 의 구조는 <code>(vocab_size, embedding_dimension)</code> 의 형태를 가진다.</p>
+<p>embedding layer 의 weight 값을 가져오는 방법은 <code>get_layer()</code> 와 <code>get_weights()</code> 를 사용하는 것이다.</p>
+<p>그리고, <code>TextVectorization</code> 레이어 클래스의 <code>get_vocabulary()</code> 함수는 vocabulary 의 각 token 에 대한 meta 정보를 가져온다.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">get_embedding</span><span class="p">(</span><span class="n">model</span><span class="p">,</span>
+                  <span class="n">embedding_layer_name</span><span class="o">=</span><span class="s1">&#39;embedding&#39;</span><span class="p">,</span>
+                  <span class="n">vectorize_layer_name</span><span class="o">=</span><span class="s1">&#39;text_vectorization&#39;</span><span class="p">):</span>
+    <span class="n">weights</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="n">embedding_layer_name</span><span class="p">)</span><span class="o">.</span><span class="n">get_weights</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">meta</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="n">vectorize_layer_name</span><span class="p">)</span><span class="o">.</span><span class="n">get_vocabulary</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">weights</span><span class="p">,</span> <span class="n">meta</span>
+
+<span class="n">weights</span><span class="p">,</span> <span class="n">vocab</span> <span class="o">=</span> <span class="n">get_embedding</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">vectorize_layer_name</span><span class="o">=</span><span class="n">vectorize_layer</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>추출한 embedding 을 저장하기 위해서는 <a href="http://projector.tensorflow.org/">Embedding Projector</a> 를 사용한다.</p>
+<p>상기 추출한 weight 와 meta 정보를 tab separated format 으로 저장하여 업로드하면 된다.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">save_embedding</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="n">meta</span><span class="p">,</span> <span class="n">log_dir</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">):</span>
+    <span class="n">out_v</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">log_dir</span><span class="p">,</span> <span class="s1">&#39;vectors.tsv&#39;</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+    <span class="n">out_m</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">log_dir</span><span class="p">,</span> <span class="s1">&#39;metadata.tsv&#39;</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">word</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">meta</span><span class="p">):</span>
+        <span class="k">if</span>  <span class="n">index</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="k">continue</span> <span class="c1"># skip 0, it&#39;s padding.</span>
+        <span class="n">vec</span> <span class="o">=</span> <span class="n">weights</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> 
+        <span class="n">out_v</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">vec</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">out_m</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">word</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">out_v</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="n">out_m</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+<span class="n">save_embedding</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="n">vocab</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Embedding-Projector-in-Colab">Embedding Projector in Colab<a class="anchor-link" href="#Embedding-Projector-in-Colab"> </a></h3><p><a href="https://www.tensorflow.org/tensorboard/tensorboard_projector_plugin">https://www.tensorflow.org/tensorboard/tensorboard_projector_plugin</a>
+에서 보면 바로 Colab tensorboard 상에서 embedding 을 visualize 할 수 있다.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">log_dir</span><span class="o">=</span><span class="s1">&#39;/logs/imdb-example/&#39;</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">log_dir</span><span class="p">):</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">log_dir</span><span class="p">)</span>
+<span class="n">save_embedding</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="n">vocab</span><span class="p">,</span> <span class="n">log_dir</span><span class="o">=</span><span class="n">log_dir</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>여기서는 weights 를 checkpoint 로 저장한다.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">weights</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span>
+
+<span class="c1"># Create a checkpoint from embedding, the filename and key are</span>
+<span class="c1"># name of the tensor.</span>
+<span class="n">checkpoint</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Checkpoint</span><span class="p">(</span><span class="n">embedding</span><span class="o">=</span><span class="n">weights</span><span class="p">)</span>
+<span class="n">checkpoint</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">log_dir</span><span class="p">,</span> <span class="s2">&quot;embedding.ckpt&quot;</span><span class="p">))</span>
+
+<span class="o">!</span>ls /logs/imdb-example
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>checkpoint			      metadata.tsv
+embedding.ckpt-1.data-00000-of-00001  projector_config.pbtxt
+embedding.ckpt-1.index		      vectors.tsv
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>새로 configuration</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">tensorboard.plugins</span> <span class="kn">import</span> <span class="n">projector</span>
+
+<span class="c1"># Set up config</span>
+<span class="n">config</span> <span class="o">=</span> <span class="n">projector</span><span class="o">.</span><span class="n">ProjectorConfig</span><span class="p">()</span>
+<span class="n">embedding</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">embeddings</span><span class="o">.</span><span class="n">add</span><span class="p">()</span>
+<span class="c1"># The name of the tensor will be suffixed by `/.ATTRIBUTES/VARIABLE_VALUE`</span>
+<span class="n">embedding</span><span class="o">.</span><span class="n">tensor_name</span> <span class="o">=</span> <span class="s2">&quot;embedding/.ATTRIBUTES/VARIABLE_VALUE&quot;</span>
+<span class="n">embedding</span><span class="o">.</span><span class="n">metadata_path</span> <span class="o">=</span> <span class="s1">&#39;metadata.tsv&#39;</span>
+<span class="n">projector</span><span class="o">.</span><span class="n">visualize_embeddings</span><span class="p">(</span><span class="n">log_dir</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Tensorboard로 visualize</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">tensorboard</span> --logdir /logs/imdb-example/
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea ">
+<pre>Reusing TensorBoard on port 6007 (pid 223), started 0:03:18 ago. (Use &#39;!kill 223&#39; to kill it.)</pre>
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+
+
+<div id="f88247d7-df0e-469c-a78b-326fe36b6f90"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#f88247d7-df0e-469c-a78b-326fe36b6f90');
+
+        (async () => {
+            const url = new URL(await google.colab.kernel.proxyPort(6007, {'cache': true}));
+            url.searchParams.set('tensorboardColab', 'true');
+            const iframe = document.createElement('iframe');
+            iframe.src = url;
+            iframe.setAttribute('width', '100%');
+            iframe.setAttribute('height', '800');
+            iframe.setAttribute('frameborder', 0);
+            document.body.appendChild(iframe);
+        })();
+    
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+</div>
+
+
+
+            </div>
+
+            <!-- Rating -->
+            
+
+            <!-- Post Date -->
+            <p>
+            <small>
+                <span class="post-date"><time class="post-date" datetime="2020-12-30">30 Dec 2020</time></span>           
+                
+                </small>
+            </p>
+
+            <!-- Post Categories -->
+            <div class="after-post-cats">
+                <ul class="tags mb-4">
+                    
+                    
+                    <li>
+                        <a class="smoothscroll" href="/site/categories#Keras">Keras</a>
+                    </li>
+                    
+                    <li>
+                        <a class="smoothscroll" href="/site/categories#Sentiment-Classification">Sentiment Classification</a>
+                    </li>
+                    
+                </ul>
+            </div>
+            <!-- End Categories -->
+
+            <!-- Post Tags -->
+            <div class="after-post-tags">
+                <ul class="tags">
+                    
+                    
+                </ul>
+            </div>
+            <!-- End Tags -->
+
+            <!-- Prev/Next -->
+            <div class="row PageNavigation d-flex justify-content-between font-weight-bold">
+            
+            <a class="prev d-block col-md-6" href="/site//Hello_Jupyter/"> &laquo; Hello Jupyter</a>
+            
+            
+            <div class="clearfix"></div>
+            </div>
+            <!-- End Categories -->
+
+        </div>
+        <!-- End Post -->
+
+    </div>
+</div>
+<!-- End Article
+================================================== -->
+
+<!-- Begin Comments
+================================================== -->
+
+    <div class="container">
+        <div id="comments" class="row justify-content-center mb-5">
+            <div class="col-md-8">
+                <section class="disqus">
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        var disqus_shortname = ''; 
+        var disqus_developer = 0;
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = window.location.protocol + '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</section>
+
+            </div>
+        </div>
+    </div>
+
+<!--End Comments
+================================================== -->
+
+<!-- Review with LD-JSON, adapt it for your needs if you like, but make sure you test the generated HTML source code first: 
+https://search.google.com/structured-data/testing-tool/u/0/
+================================================== -->
+
+</div>
+
+
+
+</div>
+
+<!-- Categories Jumbotron
+================================================== -->
+<div class="jumbotron fortags">
+	<div class="d-md-flex h-100">
+		<div class="col-md-4 transpdark align-self-center text-center h-100">
+            <div class="d-md-flex align-items-center justify-content-center h-100">
+                <h2 class="d-md-block align-self-center py-1 font-weight-light">Explore <span class="d-none d-md-inline">→</span></h2>
+            </div>
+		</div>
+		<div class="col-md-8 p-5 align-self-center text-center">
+            
+            
+                
+                    <a class="mt-1 mb-1" href="/site/categories#markdown">markdown (1)</a>
+                
+                    <a class="mt-1 mb-1" href="/site/categories#jupyter">jupyter (2)</a>
+                
+                    <a class="mt-1 mb-1" href="/site/categories#Sentiment-Classification">Sentiment Classification (1)</a>
+                
+                    <a class="mt-1 mb-1" href="/site/categories#Keras">Keras (1)</a>
+                
+            
+            
+		</div>
+	</div>
+</div>
+
+<!-- Begin Footer
+================================================== -->
+<footer class="footer">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 col-sm-6 text-center text-lg-left">
+                Copyright © 2020 Jonghoon Seo
+            </div>
+            <div class="col-md-6 col-sm-6 text-center text-lg-right">
+                <a target="_blank" href="https://www.wowthemes.net/mediumish-free-jekyll-template/">Mediumish Jekyll Theme</a> by WowThemes.net
+            </div>
+        </div>
+    </div>
+</footer>
+<!-- End Footer
+================================================== -->
+
+</div> <!-- /.site-content -->
+
+<!-- Scripts
+================================================== -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
+
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+
+<script src="/site/assets/js/mediumish.js"></script>
+
+
+
+<script src="/site/assets/js/ie10-viewport-bug-workaround.js"></script>
+
+
+
+</body>
+</html>
