@@ -16,6 +16,7 @@ services:
     tty: true
     volumes:
       - .:/data/
+    restart: unless-stopped
 
   converter:
     <<: *fastpages
@@ -29,7 +30,6 @@ services:
   jekyll:
     working_dir: /data
     image: fastai/fastpages-jekyll
-    restart: unless-stopped
     ports:
       - "4000:4000"
     volumes:
